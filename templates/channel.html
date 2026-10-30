@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ channel.channel_name }} - TubeFlow Channel{% endblock %}
+
+{% block content %}
+<div class="channel-page">
+  <!-- Channel Banner -->
+  <div class="channel-banner-wrapper">
+    <img src="{{ channel.banner_url }}" alt="{{ channel.channel_name }} Banner" class="channel-banner-img">
+  </div>
+
+  <!-- Channel Profile Header -->
+  <div class="channel-profile-header">
+    <div class="channel-header-left">
+      <img src="{{ channel.avatar_url }}" alt="{{ channel.channel_name }}" class="channel-big-avatar">
+      <div class="channel-text-info">
+        <h1>
+          {{ channel.channel_name }}
+          {% if channel.verified %}
+            <i data-lucide="check-circle" style="width: 22px; height: 22px; color: #3ea6ff; fill: #3ea6ff;"></i>
+          {% endif %}
+        </h1>
+        <div class="channel-handle-stats">
+          <span>@{{ channel.handle }}</span>
+          <span>•</span>
+          <span id="channelSubscribersCount">{{ "{:,}".format(channel.subscriber_count) }} subscribers</span>
+          <span>•</span>
+          <span>{{ videos|length }} videos</span>
+        </div>
+        <p class="channel-bio-text">{{ channel.description }}</p>
+      </div>
+    </div>
+
+    <!-- Subscribe Action -->
+    <button class="btn-subscribe" id="channelPageSubscribeBtn" data-channel-id="{{ channel.id }}">
+      Subscribe
+    </button>
+  </div>
+
+  <!-- Section Title -->
+  <div style="border-bottom: 1px solid var(--border-color); margin-bottom: 20px; padding-bottom: 10px;">
+    <h2 style="font-size: 18px; font-weight: 700;">Uploaded Videos</h2>
+  </div>
+
+  <!-- Channel Videos Grid -->
+  {% if videos and videos|length > 0 %}
+  <div class="videos-grid">
+    {% for video in videos %}
+    <article class="video-card" onclick="window.location.href='/watch?v={{ video.id }}'">
+      <div class="video-thumbnail-wrapper">
+        <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="video-thumbnail" loading="lazy">
+        <span class="video-duration-badge">{{ video.duration }}</span>
+      </div>
+      <div class="video-details">
+        <div class="card-meta">
+          <h3 class="card-title">{{ video.title }}</h3>
+          <div class="card-stats">
+            <span>{{ "{:,}".format(video.views_count) }} views</span>
+            <span>•</span>
+            <span>{{ video.created_at.strftime('%b %d, %Y') if video.created_at else 'Recent' }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i data-lucide="video-off"></i>
+    <h3>No videos yet</h3>
+    <p>This creator has not uploaded any videos yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const subBtn = document.getElementById("channelPageSubscribeBtn");
+  const subCount = document.getElementById("channelSubscribersCount");
+  if (!subBtn) return;
+
+  const channelId = subBtn.getAttribute("data-channel-id");
+  const userId = getActiveUserId();
+
+  // Check initial state
+  try {
+    const res = await fetch(`/api/users`);
+    // Subscribe click
+    subBtn.addEventListener("click", async () => {
+      const resp = await fetch(`/api/channels/${channelId}/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId })
+      });
+      const data = await resp.json();
+      if (data.subscribed) {
+        subBtn.classList.add("subscribed");
+        subBtn.textContent = "Subscribed";
+        showToast("Subscribed to channel!");
+      } else {
+        subBtn.classList.remove("subscribed");
+        subBtn.textContent = "Subscribe";
+        showToast("Unsubscribed");
+      }
+      if (subCount) {
+        subCount.textContent = `${Number(data.subscribers).toLocaleString()} subscribers`;
+      }
+    });
+  } catch(e) {
+    console.error(e);
+  }
+});
+</script>
+{% endblock %}

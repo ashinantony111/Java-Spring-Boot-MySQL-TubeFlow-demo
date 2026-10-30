@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <defs>
+    <linearGradient id="grad_thumb_nature" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#065f46" />
+    </linearGradient>
+    <pattern id="grid_t_thumb_nature" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="360" fill="url(#grad_thumb_nature)" />
+  <rect width="640" height="360" fill="url(#grid_t_thumb_nature)" />
+  <circle cx="520" cy="90" r="100" fill="rgba(255,255,255,0.06)" />
+  
+  <!-- Play watermark icon -->
+  <g transform="translate(280, 140)">
+    <circle cx="40" cy="40" r="36" fill="rgba(0,0,0,0.4)" />
+    <polygon points="32,25 56,40 32,55" fill="#ffffff" />
+  </g>
+
+  <!-- Tag Pill -->
+  <rect x="35" y="35" width="240" height="28" rx="6" fill="#FF0000" />
+  <text x="45" y="54" font-family="Segoe UI, Roboto, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">PACIFIC OCEAN REEF</text>
+
+  <!-- Title -->
+  <text x="35" y="315" font-family="Segoe UI, Roboto, sans-serif" font-size="24" font-weight="800" fill="#ffffff">Diving The Deep Blue Wonders</text>
+</svg>

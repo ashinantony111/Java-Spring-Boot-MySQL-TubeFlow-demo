@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}MySQL Database Console & Explorer - TubeFlow{% endblock %}
+
+{% block content %}
+<div class="db-dashboard">
+  <!-- Status Banner -->
+  <div class="db-status-banner">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+          <i data-lucide="database" style="color: var(--brand-red);"></i>
+          <span>MySQL Database Center & Live Console</span>
+        </h1>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
+          Inspect MySQL relational tables, run live SQL queries, test connection parameters, and migrate data.
+        </p>
+      </div>
+
+      <div>
+        <span class="db-status-pill {% if db_status.active_engine == 'mysql' %}mysql-active{% else %}sqlite-fallback{% endif %}" style="font-size: 14px; padding: 8px 16px;">
+          <span class="pulse-dot"></span>
+          <span>Engine: {{ db_status.active_engine|upper }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="db-cards-grid">
+      <div class="db-stat-card">
+        <div class="label">Database Name</div>
+        <div class="value" style="font-size: 17px; font-family: var(--font-mono); color: #60a5fa;">{{ db_status.mysql_database }}</div>
+      </div>
+      <div class="db-stat-card">
+        <div class="label">Host & Port</div>
+        <div class="value" style="font-size: 17px; font-family: var(--font-mono);">{{ db_status.mysql_host }}:{{ db_status.mysql_port }}</div>
+      </div>
+      <div class="db-stat-card">
+        <div class="label">Relational Tables</div>
+        <div class="value" style="color: #4ade80;">{{ db_status.tables|length }} Tables</div>
+      </div>
+      <div class="db-stat-card">
+        <div class="label">Total Videos in DB</div>
+        <div class="value">{{ db_status.table_counts.get('videos', 0) }}</div>
+      </div>
+    </div>
+
+    {% if db_status.active_engine != 'mysql' %}
+    <div style="margin-top: 18px; padding: 14px 18px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-sm); font-size: 13px; color: #fbbf24; display: flex; align-items: center; gap: 12px;">
+      <i data-lucide="info" style="flex-shrink: 0; width: 20px; height: 20px;"></i>
+      <div>
+        <strong>Currently running in SQLite Fallback mode.</strong> MySQL server was not reachable at <code style="font-family: var(--font-mono);">{{ db_status.mysql_host }}:{{ db_status.mysql_port }}</code>. You can start your MySQL service (e.g., XAMPP, MariaDB, or standard MySQL) and connect below with 1-click migration!
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="db-config-grid">
+    <!-- MySQL Configuration & Live Switcher -->
+    <div class="db-panel">
+      <h3>
+        <i data-lucide="settings-2" style="color: #60a5fa;"></i>
+        <span>MySQL Connection Setup</span>
+      </h3>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+        Connect to local XAMPP, WAMP, Docker, or remote MySQL 5.7 / 8.0+ server.
+      </p>
+
+      <form id="mysqlConfigForm">
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label class="form-label">Host</label>
+            <input type="text" id="cfgHost" class="form-input" value="{{ db_status.mysql_host }}" placeholder="127.0.0.1 or localhost">
+          </div>
+          <div class="form-group col-6">
+            <label class="form-label">Port</label>
+            <input type="number" id="cfgPort" class="form-input" value="{{ db_status.mysql_port }}" placeholder="3306">
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+          <div class="form-group col-6">
+            <label class="form-label">User</label>
+            <input type="text" id="cfgUser" class="form-input" value="{{ db_status.mysql_user }}" placeholder="root">
+          </div>
+          <div class="form-group col-6">
+            <label class="form-label">Password</label>
+            <input type="password" id="cfgPassword" class="form-input" placeholder="(empty for XAMPP root)">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label">Database Name</label>
+          <input type="text" id="cfgDatabase" class="form-input" value="{{ db_status.mysql_database }}" placeholder="tubeflow_db">
+          <span class="form-hint">TubeFlow will automatically run <code style="color: #93c5fd;">CREATE DATABASE IF NOT EXISTS</code>.</span>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-direction: row;">
+          <input type="checkbox" id="cfgMigrate" checked style="width: 16px; height: 16px;">
+          <label for="cfgMigrate" style="font-size: 13px; cursor: pointer;">Automatically migrate videos, channels, and users into MySQL</label>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" id="testConnBtn">
+            <i data-lucide="plug-zap"></i>
+            <span>Test Connection</span>
+          </button>
+          <button type="submit" class="btn btn-success" id="switchConnBtn">
+            <i data-lucide="refresh-cw"></i>
+            <span>Connect & Switch to MySQL</span>
+          </button>
+        </div>
+
+        <div id="connResultBox" style="display: none; margin-top: 14px; padding: 12px; border-radius: 6px; font-size: 13px;"></div>
+      </form>
+    </div>
+
+    <!-- Tables List & Row Counts -->
+    <div class="db-panel">
+      <h3>
+        <i data-lucide="layers" style="color: #4ade80;"></i>
+        <span>Active Relational Tables</span>
+      </h3>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+        Click any table name to instantly populate and run its SELECT query.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        {% for tbl_name in db_status.tables %}
+        <div class="quick-table-card" onclick="loadTableQuery('{{ tbl_name }}')" style="background: var(--bg-hover); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s ease;">
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: #93c5fd;">{{ tbl_name }}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Table in {{ db_status.active_engine }}</div>
+          </div>
+          <span style="background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+            {{ db_status.table_counts.get(tbl_name, 0) }} rows
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive SQL Query Console -->
+  <div class="db-panel">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+      <h3>
+        <i data-lucide="terminal" style="color: #f43f5e;"></i>
+        <span>Interactive SQL Query Console</span>
+      </h3>
+      <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">Engine: {{ db_status.active_engine|upper }}</span>
+    </div>
+
+    <!-- Quick Queries Pills -->
+    <div class="quick-queries">
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT id, title, views_count, likes_count, duration, category_id, created_at FROM videos ORDER BY views_count DESC;')">SELECT videos (top views)</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT id, username, full_name, email, created_at FROM users;')">SELECT users</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT id, channel_name, handle, subscriber_count, verified FROM channels;')">SELECT channels</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT id, video_id, user_id, content, likes_count, created_at FROM comments;')">SELECT comments</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT * FROM categories;')">SELECT categories</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT * FROM subscriptions;')">SELECT subscriptions</button>
+      <button type="button" class="quick-sql-btn" onclick="setQuery('SELECT * FROM watch_history ORDER BY watched_at DESC;')">SELECT watch_history</button>
+    </div>
+
+    <!-- SQL Textarea -->
+    <textarea id="sqlQueryInput" class="sql-query-box" placeholder="Write any SQL query, e.g. SELECT * FROM videos LIMIT 10;">SELECT id, title, views_count, likes_count, duration, created_at FROM videos ORDER BY id ASC;</textarea>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+      <span id="queryMetricText" style="font-size: 13px; color: var(--text-secondary);">Ready to execute.</span>
+      <button class="btn btn-primary" id="runQueryBtn">
+        <i data-lucide="play"></i>
+        <span>Execute Query</span>
+      </button>
+    </div>
+
+    <!-- Query Results Table -->
+    <div id="queryResultContainer" style="display: none;">
+      <div class="data-table-container">
+        <table class="data-table" id="queryResultTable">
+          <thead id="queryResultHead"></thead>
+          <tbody id="queryResultBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/db_admin.js"></script>
+{% endblock %}

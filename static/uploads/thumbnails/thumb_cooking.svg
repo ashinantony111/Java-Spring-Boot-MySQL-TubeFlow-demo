@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <defs>
+    <linearGradient id="grad_thumb_cooking" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <pattern id="grid_t_thumb_cooking" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="360" fill="url(#grad_thumb_cooking)" />
+  <rect width="640" height="360" fill="url(#grid_t_thumb_cooking)" />
+  <circle cx="520" cy="90" r="100" fill="rgba(255,255,255,0.06)" />
+  
+  <!-- Play watermark icon -->
+  <g transform="translate(280, 140)">
+    <circle cx="40" cy="40" r="36" fill="rgba(0,0,0,0.4)" />
+    <polygon points="32,25 56,40 32,55" fill="#ffffff" />
+  </g>
+
+  <!-- Tag Pill -->
+  <rect x="35" y="35" width="276" height="28" rx="6" fill="#FF0000" />
+  <text x="45" y="54" font-family="Segoe UI, Roboto, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">MASTER HOMEMADE RAMEN</text>
+
+  <!-- Title -->
+  <text x="35" y="315" font-family="Segoe UI, Roboto, sans-serif" font-size="24" font-weight="800" fill="#ffffff">From Scratch in 45 Minutes</text>
+</svg>

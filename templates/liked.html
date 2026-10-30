@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Liked Videos - TubeFlow{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 24px;">
+  <h1 style="font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+    <i data-lucide="thumbs-up" style="color: var(--brand-red);"></i>
+    <span>Liked Videos</span>
+  </h1>
+  <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Videos you have given a thumbs up to in MySQL database.</p>
+</div>
+
+{% if videos and videos|length > 0 %}
+<div class="videos-grid">
+  {% for video in videos %}
+  <article class="video-card" onclick="window.location.href='/watch?v={{ video.id }}'">
+    <div class="video-thumbnail-wrapper">
+      <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="video-thumbnail" loading="lazy">
+      <span class="video-duration-badge">{{ video.duration }}</span>
+    </div>
+    <div class="video-details">
+      {% if video.channel %}
+      <a href="/channel/{{ video.channel.handle }}" onclick="event.stopPropagation();">
+        <img src="{{ video.channel.avatar_url }}" alt="{{ video.channel.channel_name }}" class="card-channel-avatar">
+      </a>
+      {% endif %}
+      <div class="card-meta">
+        <h3 class="card-title">{{ video.title }}</h3>
+        {% if video.channel %}
+        <div class="card-channel-name">{{ video.channel.channel_name }}</div>
+        {% endif %}
+        <div class="card-stats">
+          <span>{{ "{:,}".format(video.views_count) }} views</span>
+          <span>•</span>
+          <span>{{ "{:,}".format(video.likes_count) }} likes</span>
+        </div>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i data-lucide="thumbs-up"></i>
+  <h3>No liked videos yet</h3>
+  <p>Videos you like while watching will show up here.</p>
+</div>
+{% endif %}
+{% endblock %}

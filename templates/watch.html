@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}{{ video.title }} - TubeFlow{% endblock %}
+
+{% block content_wrapper_class %}watch-page-wrapper{% endblock %}
+
+{% block content %}
+<div class="watch-container" id="watchContainer" data-video-id="{{ video.id }}">
+  <!-- MAIN WATCH COLUMN -->
+  <div class="watch-main">
+    <!-- Video Player Wrapper -->
+    <div class="player-wrapper" id="playerWrapper">
+      <video 
+        id="tubeVideoPlayer" 
+        class="custom-video-player" 
+        controls 
+        autoplay 
+        playsinline
+        preload="metadata"
+        poster="{{ video.thumbnail_url }}"
+        src="{{ video.video_url }}">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Video Title -->
+    <h1 class="watch-title">{{ video.title }}</h1>
+
+    <!-- Channel & Action Buttons Bar -->
+    <div class="watch-actions-bar">
+      <!-- Channel Info & Subscribe -->
+      <div class="channel-row">
+        {% if video.channel %}
+        <a href="/channel/{{ video.channel.handle }}" class="channel-link">
+          <img src="{{ video.channel.avatar_url }}" alt="{{ video.channel.channel_name }}" class="channel-avatar-lg">
+          <div class="channel-info-col">
+            <span class="channel-title">
+              {{ video.channel.channel_name }}
+              {% if video.channel.verified %}
+                <i data-lucide="check-circle" style="width: 15px; height: 15px; color: #3ea6ff; fill: #3ea6ff;"></i>
+              {% endif %}
+            </span>
+            <span class="channel-subs" id="channelSubsCount">{{ "{:,}".format(video.channel.subscriber_count) }} subscribers</span>
+          </div>
+        </a>
+        <button class="btn-subscribe" id="subscribeBtn" data-channel-id="{{ video.channel.id }}">
+          Subscribe
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- Video Action Pills (Like, Dislike, Share, Save) -->
+      <div class="actions-right">
+        <!-- Like / Dislike Combined Pill -->
+        <div class="pill-group">
+          <button class="pill-action-btn" id="likeBtn" title="I like this">
+            <i data-lucide="thumbs-up"></i>
+            <span id="likesCountText">{{ "{:,}".format(video.likes_count) }}</span>
+          </button>
+          <div class="pill-divider"></div>
+          <button class="pill-action-btn" id="dislikeBtn" title="I dislike this">
+            <i data-lucide="thumbs-down"></i>
+          </button>
+        </div>
+
+        <!-- Share Button -->
+        <button class="btn-secondary-action" id="shareBtn" title="Share Video">
+          <i data-lucide="share-2"></i>
+          <span>Share</span>
+        </button>
+
+        <!-- Save / Watch Later Button -->
+        <button class="btn-secondary-action" id="watchLaterBtn" title="Save to Watch Later">
+          <i data-lucide="clock"></i>
+          <span>Save</span>
+        </button>
+
+        <!-- Theater Mode Toggle -->
+        <button class="btn-secondary-action" id="theaterModeBtn" title="Theater Mode">
+          <i data-lucide="maximize-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Description Box -->
+    <div class="video-description-box" id="descBox">
+      <div class="desc-stats">
+        <span>{{ "{:,}".format(video.views_count) }} views</span>
+        <span>•</span>
+        <span>{{ video.created_at.strftime('%B %d, %Y') if video.created_at else 'Recent' }}</span>
+        {% if video.category %}
+          <span style="margin-left: 10px; color: #3ea6ff;">#{{ video.category.name }}</span>
+        {% endif %}
+      </div>
+      <div class="desc-content" id="descContent">
+{{ video.description }}
+      </div>
+      <span class="desc-toggle-text" id="descToggleText">Show more</span>
+    </div>
+
+    <!-- Comments Section -->
+    <section class="comments-section">
+      <div class="comments-header">
+        <h2 class="comments-count"><span id="commentTotalCount">{{ comments|length }}</span> Comments</h2>
+      </div>
+
+      <!-- Add Comment Input Box -->
+      <div class="comment-input-box">
+        <img id="commentUserAvatar" src="/static/uploads/avatars/default.svg" class="commenter-avatar" alt="Avatar">
+        <form class="comment-form" id="newCommentForm">
+          <textarea 
+            class="comment-textarea" 
+            id="commentContentInput" 
+            placeholder="Add a comment..." 
+            rows="1"
+            required></textarea>
+          <div class="comment-form-actions" id="commentFormActions" style="display: none;">
+            <button type="button" class="btn btn-secondary" id="cancelCommentBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="submitCommentBtn">Comment</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Comments List -->
+      <div class="comment-list" id="commentList">
+        {% for comment in comments %}
+        <div class="comment-item" id="comment-{{ comment.id }}">
+          <img src="{{ comment.user.avatar_url if comment.user else '/static/uploads/avatars/default.svg' }}" class="comment-author-avatar" alt="User">
+          <div class="comment-content-col">
+            <div class="comment-header">
+              <span class="comment-author-name">{{ comment.user.full_name if comment.user else 'Anonymous' }}</span>
+              <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y') if comment.created_at else '' }}</span>
+            </div>
+            <div class="comment-body">{{ comment.content }}</div>
+            <div class="comment-actions">
+              <button class="comment-action-btn" title="Like comment">
+                <i data-lucide="thumbs-up" style="width: 14px; height: 14px;"></i>
+                <span>{{ comment.likes_count if comment.likes_count > 0 else '' }}</span>
+              </button>
+              <button class="comment-action-btn" title="Dislike comment">
+                <i data-lucide="thumbs-down" style="width: 14px; height: 14px;"></i>
+              </button>
+              <button class="comment-action-btn delete-comment-btn" data-comment-id="{{ comment.id }}" data-user-id="{{ comment.user_id }}" style="display: none; color: #ef4444;">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <!-- SIDEBAR UP NEXT RECOMMENDATIONS -->
+  <aside class="watch-sidebar">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Up Next</h3>
+    {% for item in related_videos %}
+    <div class="related-video-card" onclick="window.location.href='/watch?v={{ item.id }}'">
+      <div class="related-thumb-wrapper">
+        <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" class="related-thumb" loading="lazy">
+        <span class="related-duration">{{ item.duration }}</span>
+      </div>
+      <div class="related-info">
+        <h4 class="related-title" title="{{ item.title }}">{{ item.title }}</h4>
+        <div class="related-channel">{{ item.channel.channel_name if item.channel else 'TubeFlow' }}</div>
+        <div class="related-stats">{{ "{:,}".format(item.views_count) }} views</div>
+      </div>
+    </div>
+    {% endfor %}
+  </aside>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/player.js"></script>
+{% endblock %}

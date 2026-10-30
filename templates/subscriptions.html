@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Subscriptions - TubeFlow{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 20px;">
+  <h1 style="font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+    <i data-lucide="tv" style="color: var(--brand-red);"></i>
+    <span>Subscription Feed</span>
+  </h1>
+  <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Latest videos from channels you are subscribed to in MySQL database.</p>
+</div>
+
+{% if videos and videos|length > 0 %}
+<div class="videos-grid">
+  {% for video in videos %}
+  <article class="video-card" onclick="window.location.href='/watch?v={{ video.id }}'">
+    <div class="video-thumbnail-wrapper">
+      <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="video-thumbnail" loading="lazy">
+      <span class="video-duration-badge">{{ video.duration }}</span>
+    </div>
+    <div class="video-details">
+      {% if video.channel %}
+      <a href="/channel/{{ video.channel.handle }}" onclick="event.stopPropagation();">
+        <img src="{{ video.channel.avatar_url }}" alt="{{ video.channel.channel_name }}" class="card-channel-avatar">
+      </a>
+      {% endif %}
+      <div class="card-meta">
+        <h3 class="card-title">{{ video.title }}</h3>
+        {% if video.channel %}
+        <a href="/channel/{{ video.channel.handle }}" class="card-channel-name" onclick="event.stopPropagation();">
+          <span>{{ video.channel.channel_name }}</span>
+          {% if video.channel.verified %}
+            <i data-lucide="check-circle" style="width: 14px; height: 14px; color: #3ea6ff; fill: #3ea6ff;"></i>
+          {% endif %}
+        </a>
+        {% endif %}
+        <div class="card-stats">
+          <span>{{ "{:,}".format(video.views_count) }} views</span>
+          <span>•</span>
+          <span>{{ video.created_at.strftime('%b %d, %Y') if video.created_at else 'Recent' }}</span>
+        </div>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i data-lucide="tv"></i>
+  <h3>No subscriptions yet</h3>
+  <p>Subscribe to your favorite channels to see their latest videos right here!</p>
+</div>
+{% endif %}
+{% endblock %}

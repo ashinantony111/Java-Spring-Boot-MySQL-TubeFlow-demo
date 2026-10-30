@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" width="1200" height="240">
+  <defs>
+    <linearGradient id="bg_tech_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <pattern id="grid_tech_banner" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="240" fill="url(#bg_tech_banner)" />
+  <rect width="1200" height="240" fill="url(#grid_tech_banner)" />
+  <circle cx="1100" cy="60" r="120" fill="rgba(255,255,255,0.03)" />
+  <text x="60" y="135" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="42" font-weight="800" fill="#ffffff" letter-spacing="1">TechVoyager - The Future of Technology</text>
+</svg>
